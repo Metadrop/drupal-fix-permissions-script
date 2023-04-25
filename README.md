@@ -25,6 +25,15 @@ This scripts tries to secure the site using the following scheme:
   - Content is owned using the same scheme but the web server can write as well.
 
 
+## Installation
+
+Clone or donwload the repository content to your server.
+
+Link to `drupal_fix_permissions.sh` in the `/usr/local/bin` or another folder present in users's PATH.
+
+If you are using `autofix-drupal-perms.sh`, link it as well. Because it expects `drupal_fix_permissions.sh` to be at `/usr/local/bin` make sure that path exists or edit the autofix script.
+
+If required, edit your sudo configuration to allow users to run `drupal_fix_permissions.sh` as root.
 
 
 ## Usage
