@@ -163,20 +163,20 @@ function fix_onwership() {
   case $simulate in
     0)
     # Real action.
-    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
+    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
     ;;
 
     1)
     # Simulate.
     printf "\n    Items with wrong ownership: "
-    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) -print | wc -l
+    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print | wc -l
     ;;
 
     2)
     # Simulate verbosely.
     printf "\n    Files and directories that would have their ownership fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" $detected_vendor_path -type f -type -d \( ! -user $drupal_user -o ! -group $httpd_group \) -print)
+    items=$(find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print)
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
