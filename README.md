@@ -24,6 +24,19 @@ This scripts tries to secure the site using the following scheme:
 
   - Content is owned using the same scheme but the web server can write as well.
 
+  - Other users have no permissions on content or code.
+
+
+In UNIX terms:
+
+|                     |  Symbolic notation |  Numeric notation | ls notation  |
+|-------------------- |------------------- |------------------ |------------- |
+| **Code folders**    |    `u=rwx,g=rx,o=` |            `0750` |  `rwxr-x---` |
+| **Code files**      |      `u=rw,g=r,o=` |            `0640` |  `rw-r-----` |
+| **Content folders** |   `u=rwx,g=rwx,o=` |            `0770` |  `rwxrwx---` |
+| **Content files**   |         `ug=rw,o=` |            `0660` |  `rw-rw----` |
+
+
 
 ## Installation
 
