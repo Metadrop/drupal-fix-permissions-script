@@ -83,6 +83,10 @@ folders.
 If there are content folders outside the Drupal root folder you can use the
 `--files-path` option and the script will take care of it.
 
+If a `vendor` folder and a `composer.json` file are detected in the parent
+folder of the Drupal root the script assumes the `vendor` folder is a code
+folder and fixes permissions accordingly.
+
 ## Performance
 
 The script only changes the files and folder with the wrong permissions or

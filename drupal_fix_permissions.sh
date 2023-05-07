@@ -163,20 +163,20 @@ function fix_onwership() {
   case $simulate in
     0)
     # Real action.
-    find "$1" \( ! -user $drupal_user -o ! -group $httpd_group \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
+    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
     ;;
 
     1)
     # Simulate.
     printf "\n    Items with wrong ownership: "
-    find "$1" \( ! -user $drupal_user -o ! -group $httpd_group \) -print | wc -l
+    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) -print | wc -l
     ;;
 
     2)
     # Simulate verbosely.
     printf "\n    Files and directories that would have their ownership fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" \( ! -user $drupal_user -o ! -group $httpd_group \) -print)
+    items=$(find "$1" $detected_vendor_path -type f -type -d \( ! -user $drupal_user -o ! -group $httpd_group \) -print)
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -196,12 +196,12 @@ function fix_code_permission_helper() {
   case $simulate in
     0)
     # Real action.
-    find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
+    find "$1" $detected_vendor_path \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
+    num=$(find "$1" $detected_vendor_path \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
     printf "\n    Code items with wrong permissions: $num"
     ;;
 
@@ -209,7 +209,7 @@ function fix_code_permission_helper() {
     # Simulate verbosely.
     printf "\n    Code files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
+    items=$(find "$1" $detected_vendor_path \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -377,6 +377,8 @@ content_file_perms='ug=rw,o='
 cd $drupal_path
 complete_drupal_path=$(pwd)
 
+# Check if there's a vendor folder in the upper folder.
+[ -d "../vendor" ] && [ -f "../composer.json" ] && detected_vendor_path="../vendor"
 
 
 # Show current configuration.
@@ -387,6 +389,7 @@ Owner user: $drupal_user
 Owner group: $httpd_group
 Code dirs perms: $code_dir_perms
 Code files perms: $code_file_perms
+Separated vendor folder detected: ${detected_vendor_path:-"No"}
 Content dirs perms: $content_dir_perms
 Content files perms: $content_file_perms
 File folder name: $file_folder_name
@@ -396,7 +399,6 @@ if [ ! -z "${additional_files_paths}" ]
 then
   printf "Additional content directories to process:\n${additional_files_paths}"
 fi
-
 
 
 # Sanity checks.
