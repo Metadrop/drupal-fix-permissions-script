@@ -29,7 +29,7 @@ This scripts tries to secure the site using the following scheme:
 
 Clone or donwload the repository content to your server.
 
-Link to `drupal_fix_permissions.sh` in the `/usr/local/bin` or another folder present in users's PATH.
+Link to `drupal_fix_permissions.sh` in the `/usr/local/bin` or another folder present in users' PATH.
 
 If you are using `autofix-drupal-perms.sh`, link it as well. Because it expects `drupal_fix_permissions.sh` to be at `/usr/local/bin` make sure that path exists or edit the autofix script.
 
@@ -91,5 +91,5 @@ run, it calls the main script with predefined parameters:
 
 The script is an example, you can customize it for your hosting needs.
 
-This repository also includes a sudoers file example to allow user to run the
+This repository also includes a sudoers file example to allow users to run the
 script using sudo.
