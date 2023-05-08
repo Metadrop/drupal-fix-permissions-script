@@ -83,9 +83,23 @@ folders.
 If there are content folders outside the Drupal root folder you can use the
 `--files-path` option and the script will take care of it.
 
+## Vendor folder
+
 If a `vendor` folder and a `composer.json` file are detected in the parent
 folder of the Drupal root the script assumes the `vendor` folder is a code
-folder and fixes permissions accordingly.
+folder and fixes permissions accordingly: it fixes ownership (owner: deploy
+user, group: web server) and removes any permissions for other users.
+
+It doesn't apply standard permissions of code files because in `vendor` folders
+there are some files that needs to be executable. It would be hard to detect all
+the cases that needs executable permissions so the script doesn't handle
+permissions for the owner or the group and just removes all permissions for
+other users.
+
+In case of issues in the `vendor` folder, because the the script fixes ownership
+on the `vendor` folder, the deploy user should able to run `composer
+install` and let composer set the correct permissions. Later, the script can be
+run again to remove all permissions on other users.
 
 ## Performance
 

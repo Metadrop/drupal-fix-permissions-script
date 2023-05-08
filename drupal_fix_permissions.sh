@@ -196,12 +196,12 @@ function fix_code_permission_helper() {
   case $simulate in
     0)
     # Real action.
-    find "$1" $detected_vendor_path \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
+    find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" $detected_vendor_path \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
+    num=$(find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
     printf "\n    Code items with wrong permissions: $num"
     ;;
 
@@ -209,7 +209,7 @@ function fix_code_permission_helper() {
     # Simulate verbosely.
     printf "\n    Code files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" $detected_vendor_path \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
+    items=$(find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -267,6 +267,16 @@ function fix_code_permissions() {
 
   printf "\n  Setting permissions on code files to $code_file_perms under '$name'"
   fix_code_permission_helper "$1" f "$code_file_perms"
+
+
+  if [ ! -z "$detected_vendor_path" ]
+  then
+    printf "\n  Setting permissions on vendor code directories to $code_dir_perms under '$detected_vendor_path'"
+    fix_code_permission_helper "$detected_vendor_path" d "$code_dir_perms"
+
+    printf "\n  Removing all permissions on vendor code files to other users ($vendor_code_file_perms) under '$detected_vendor_path'"
+    fix_code_permission_helper "$detected_vendor_path" f "$vendor_code_file_perms"
+  fi
 
 }
 
@@ -368,6 +378,7 @@ fi
 # content files).
 code_dir_perms='u=rwx,g=rx,o='
 code_file_perms='u=rw,g=r,o='
+vendor_code_file_perms='o='
 content_dir_perms="u=rwx,g=rw${group_executable_mode},o="
 content_file_perms='ug=rw,o='
 
