@@ -196,12 +196,12 @@ function fix_code_permission_helper() {
   case $simulate in
     0)
     # Real action.
-    find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
+    find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
+    num=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
     printf "\n    Code items with wrong permissions: $num"
     ;;
 
@@ -209,7 +209,7 @@ function fix_code_permission_helper() {
     # Simulate verbosely.
     printf "\n    Code files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" \( -path "$1"/sites/*/$file_folder_name -prune \) -o \( -path "$1"/sites/*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
+    items=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -481,3 +481,4 @@ echo "$additional_files_paths"| while read path; do
 done
 
 printf "\n\nPermissions and ownership fixed!\n"
+
