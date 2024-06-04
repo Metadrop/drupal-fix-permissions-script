@@ -75,13 +75,14 @@ The script checks if the target folder is a Drupal installation and stops if
 it is not detected.
 
 Once checked, it fixes the ownership of all folders and files (because it is the
-same for content and code). Then, it fixes the code and later the content.
+same for content and code). Then, it fixes the code files and later the content
+files.
 
 The script assumes that `files` and `private` folders under `sites` are content
 folders.
 
 If there are content folders outside the Drupal root folder you can use the
-`--files-path` option and the script will take care of it.
+`--files-path` option and the script will take care of them.
 
 ## Vendor folder
 
@@ -105,8 +106,8 @@ run again to remove all permissions on other users.
 
 The script only changes the files and folders with the wrong permissions or
 ownership, making it very fast when only a few files or folders need a fix. For
-really big installations this is very important as other scripts apply the
-permissions and ownership regardless are needed o not.
+ really large installations this is very important as other scripts update
+ permissions and ownership regardless of whether they are needed or not.
 
 ## Root permissions
 
