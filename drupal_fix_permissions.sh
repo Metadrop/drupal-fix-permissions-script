@@ -310,7 +310,7 @@ printf "Script to fix permissions in a Drupal installation"
 
 # Default values.
 DEFAULT_DRUPAL_PATH=.
-DEFAULT_HTTPD_GROPUP="www-data"
+DEFAULT_HTTPD_GROUP="www-data"
 
 # Initialize some values.
 group_executable_mode=x
@@ -368,8 +368,8 @@ fi
 
 if [ -z $httpd_group ]
 then
-  httpd_group=$DEFAULT_HTTPD_GROPUP
-  printf "\nUsing default HTTPD group '$DEFAULT_HTTPD_GROPUP'"
+  httpd_group=$DEFAULT_HTTPD_GROUP
+  printf "\nUsing default HTTPD group '$DEFAULT_HTTPD_GROUP'"
 fi
 
 
@@ -481,4 +481,3 @@ echo "$additional_files_paths"| while read path; do
 done
 
 printf "\n\nPermissions and ownership fixed!\n"
-
