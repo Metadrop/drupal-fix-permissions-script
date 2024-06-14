@@ -159,7 +159,7 @@ is_drupal_root() {
 # Globals:
 #  drupal_user: user to own the files and directories.
 #  httpd_group: group to own the files and directories.
-function fix_onwership() {
+function fix_ownership() {
   case $simulate in
     0)
     # Real action.
@@ -456,9 +456,9 @@ printf "\nProcessing Drupal installed on '$complete_drupal_path'"
 
 # First, fix ownership.
 printf "\nFixing ownership of files and directories"
-fix_onwership "$complete_drupal_path"
+fix_ownership "$complete_drupal_path"
 echo "$additional_files_paths"| while read path; do
-  [ -d "$path" ] && fix_onwership "$path"
+  [ -d "$path" ] && fix_ownership "$path"
 done
 
 # Second, fix permissions on code.
