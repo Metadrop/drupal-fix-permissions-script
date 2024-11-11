@@ -42,11 +42,22 @@ In UNIX terms:
 
 Clone or download the repository content to your server.
 
-Link to `drupal_fix_permissions.sh` in the `/usr/local/bin` or another folder present in the user's PATH.
+Two scripts are provided:
 
-If you are using `autofix-drupal-perms.sh`, link it as well. Because it expects `drupal_fix_permissions.sh` to be at `/usr/local/bin` make sure that path exists or edit the autofix script.
+ * `drupal_fix_permissions.sh`: Main script that actually does the work
+ * `autofix-drupal-perms.sh`: Wrapper to invoke `drupal_fix_permissions.sh`
+  with predefined parameters. It is handy to configure in sudoers.
 
-If required, edit your sudo configuration to allow users to run `drupal_fix_permissions.sh` as root.
+If `autofix-drupal-perms.sh` fits your needs just symlink it into `/usr/local/bin`
+or another location reachable from the user's PATH.
+
+Otherwise, you can create your own wrapper or invoke `drupal_fix_permissions.sh` directly.
+
+### Permissions
+
+In order to manipulate files/folders ownership and permissions the script must be run as root.
+You may need to configure your sudoers file to allow for that. An example is included in
+`autofix-drupal-perms.sudoers.example` file.
 
 
 ## Usage
@@ -108,20 +119,3 @@ The script only changes the files and folders with the wrong permissions or
 ownership, making it very fast when only a few files or folders need a fix. For
  really large installations this is very important as other scripts update
  permissions and ownership regardless of whether they are needed or not.
-
-## Root permissions
-
-Giving root permissions to regular users is dangerous. Luckily, there's a simple
-script, `autofix-drupal-perms.sh`, to allow regular users to fix their sites
-without risking the security.
-
-This script has no parameters, so it can be easily added to the sudoers. When
-run, it calls the main script with predefined parameters:
-
-  - deploy user: the owner of the current folder
-  - additional content folders: ../private and ../private-files
-
-The script is an example, you can customize it for your hosting needs.
-
-This repository also includes a sudoers file example to allow users to run the
-script using sudo.
