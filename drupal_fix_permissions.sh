@@ -475,7 +475,7 @@ do
   [ -d "$site_folder/$private_folder_name" ] && fix_content_permissions "$site_folder/$private_folder_name"
 done
 
-[ -z "$additional_files_paths" ] && printf "\nProcessing additional content folders"
+[ -n "$additional_files_paths" ] && printf "\nProcessing additional content folders"
 echo "$additional_files_paths"| while read path; do
   [ -d "$path" ] && fix_content_permissions "$path"
 done
