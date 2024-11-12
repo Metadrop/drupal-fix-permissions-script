@@ -163,20 +163,20 @@ function fix_ownership() {
   case $simulate in
     0)
     # Real action.
-    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
+    find -L "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
     ;;
 
     1)
     # Simulate.
     printf "\n    Items with wrong ownership: "
-    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print | wc -l
+    find -L "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print | wc -l
     ;;
 
     2)
     # Simulate verbosely.
     printf "\n    Files and directories that would have their ownership fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print)
+    items=$(find -L "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print)
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -196,12 +196,12 @@ function fix_code_permission_helper() {
   case $simulate in
     0)
     # Real action.
-    find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
+    find -L "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
+    num=$(find -L "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
     printf "\n    Code items with wrong permissions: $num"
     ;;
 
@@ -209,7 +209,7 @@ function fix_code_permission_helper() {
     # Simulate verbosely.
     printf "\n    Code files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
+    items=$(find -L "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -229,12 +229,12 @@ function fix_content_permission_helper() {
   case $simulate in
     0)
     # Real action.
-    find "$1" -type $2 ! -perm $3 -print0 | xargs -r -0 -L20 chmod $3
+    find -L "$1" -type $2 ! -perm $3 -print0 | xargs -r -0 -L20 chmod $3
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" -type $2 ! -perm $3 -print | wc -l)
+    num=$(find -L "$1" -type $2 ! -perm $3 -print | wc -l)
     printf "\n      Content items with wrong permissions: $num"
     ;;
 
@@ -242,7 +242,7 @@ function fix_content_permission_helper() {
     # Simulate verbosely.
     printf "\n      Content files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" -type $2 ! -perm $3 -print)
+    items=$(find -L "$1" -type $2 ! -perm $3 -print)
     items=${items:-None}
     printf "\n        ${items//$'\n'/$'\n'        }\n"
     ;;
@@ -467,7 +467,7 @@ fix_code_permissions "$complete_drupal_path"
 
 # Third, fix permissions on content.
 printf "\nFixing permissions on content files and directories under 'sites' folder"
-find "$complete_drupal_path/sites/" -maxdepth 1 -mindepth 1 -type d| while read site_folder
+find -L "$complete_drupal_path/sites/" -maxdepth 1 -mindepth 1 -type d| while read site_folder
 do
   printf "\n  Checking folder "
   printf $(basename "$site_folder")
