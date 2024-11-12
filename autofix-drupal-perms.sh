@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR="$( cd "$( dirname $(realpath "${BASH_SOURCE[0]}") )" && pwd )"
+
 deploy_user=$(stat -c '%U' .)
 
-/usr/local/bin/drupal-fix-permissions -s -u=$deploy_user -f=../private -f=../private-files
+$SCRIPT_DIR/drupal_fix_permissions.sh -s -u=$deploy_user -f=../private -f=../private-files
