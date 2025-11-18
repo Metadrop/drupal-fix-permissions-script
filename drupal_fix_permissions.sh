@@ -228,13 +228,13 @@ function fix_code_permission_helper() {
 function fix_content_permission_helper() {
   case $simulate in
     0)
-    # Real action.
-    find "$1" -type $2 ! -perm $3 -print0 | xargs -r -0 -L20 chmod $3
+    # Real action. Exclude .htaccess files as they should be treated as code.
+    find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print0 | xargs -r -0 -L20 chmod $3
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" -type $2 ! -perm $3 -print | wc -l)
+    num=$(find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print | wc -l)
     printf "\n      Content items with wrong permissions: $num"
     ;;
 
@@ -242,7 +242,7 @@ function fix_content_permission_helper() {
     # Simulate verbosely.
     printf "\n      Content files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" -type $2 ! -perm $3 -print)
+    items=$(find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print)
     items=${items:-None}
     printf "\n        ${items//$'\n'/$'\n'        }\n"
     ;;
@@ -281,6 +281,42 @@ function fix_code_permissions() {
 }
 
 
+# Helper function to set code permissions on .htaccess files in content directories.
+#
+# This is an internal function.
+#
+# Params:
+#  $1 Path to the directory to process.
+#
+# Globals:
+#  code_file_perms: permissions scheme to use for code files.
+function fix_htaccess_in_content_helper() {
+  case $simulate in
+    0)
+    # Real action.
+    find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print0 | xargs -r -0 -L20 chmod "$code_file_perms"
+    ;;
+
+    1)
+    # Simulate.
+    num=$(find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print | wc -l)
+    [ $num -gt 0 ] && printf "\n      .htaccess files with wrong permissions: $num"
+    ;;
+
+    2)
+    # Simulate verbosely.
+    items=$(find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print)
+    if [ ! -z "$items" ]
+    then
+      printf "\n      .htaccess files that would have their permissions fixed: "
+      printf "\n        ${items//$'\n'/$'\n'        }\n"
+    fi
+    ;;
+
+  esac
+}
+
+
 # Sets the permissions of a content path.
 #
 # Params:
@@ -289,6 +325,7 @@ function fix_code_permissions() {
 # Globals:
 #  content_dir_perms: permissions scheme to use for content directories.
 #  content_file_perms permissions scheme to use for content files.
+#  code_file_perms: permissions scheme to use for .htaccess files.
 function fix_content_permissions() {
 
   name=$(basename "$1")
@@ -297,6 +334,9 @@ function fix_content_permissions() {
 
   printf "\n    Setting permissions on content files to $content_file_perms under '$name'"
   fix_content_permission_helper "$1" f "$content_file_perms"
+
+  printf "\n    Setting permissions on .htaccess files to $code_file_perms under '$name'"
+  fix_htaccess_in_content_helper "$1"
 }
 
 
