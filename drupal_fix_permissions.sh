@@ -216,7 +216,7 @@ function fix_ownership() {
 # Params:
 #  $1 Path to the directory to process.
 #  $2 Type of element to process. f for files, d for directories.
-#  $3 Permissions wanted compatible with chmod . Exmaple: u=rwx,g=rwxs,o=
+#  $3 Permissions wanted compatible with chmod . Example: u=rwx,g=rwxs,o=
 #
 # Globals:
 #  skip_checks: when set to 1, skip permission filtering.
@@ -264,7 +264,7 @@ function fix_code_permission_helper() {
 # Params:
 #  $1 Path to the directory to process.
 #  $2 Type of element to process. f for files, d for directories.
-#  $3 Permissions wanted compatible with chmod . Exmaple: u=rwx,g=rwxs,o=
+#  $3 Permissions wanted compatible with chmod . Example: u=rwx,g=rwxs,o=
 #
 # Globals:
 #  skip_checks: when set to 1, skip permission filtering.
