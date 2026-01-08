@@ -70,6 +70,12 @@ cat <<HELP
     -n, --dry-run: Perform no action but display information about what would be
         done. Use twice for more information.
 
+    -k, --skip-checks: Skip filtering by ownership and permissions. Process all
+        files and directories regardless of their current state. This is faster
+        when most or all files need fixing, but slower when only a few files
+        need changes. Useful for initial setup or after major changes affecting
+        many files.
+
     -h, --help: Display this help message.
 
 
@@ -102,7 +108,14 @@ cat <<HELP
       owner and Drupal Path. Process an additional content directory at
       '../private', relative to the Drupal path.
 
-    `basename "$0"` -u=deploy -n -n
+    `basename "$0"` -u=deploy -k
+
+      Fix permissions using 'deploy' as owner, and defaults value for group
+      owner and Drupal Path. Skip filtering checks to process all files
+      regardless of their current ownership or permissions. This is useful when
+      setting up a new site or after major permission changes.
+
+    `basename "$0"` -u=deploy -n
 
       Display the list of files and directories that would be fixed, using
       'deploy' as owner, and default values for group owner and Drupal Path.
@@ -159,24 +172,37 @@ is_drupal_root() {
 # Globals:
 #  drupal_user: user to own the files and directories.
 #  httpd_group: group to own the files and directories.
+#  skip_checks: when set to 1, skip ownership filtering.
 function fix_ownership() {
   case $simulate in
     0)
     # Real action.
-    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
+    if [ $skip_checks -eq 1 ]; then
+      find "$1" $detected_vendor_path \( -type f -o -type d \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
+    else
+      find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print0 | xargs -r -0 -L20 chown  $drupal_user:$httpd_group
+    fi
     ;;
 
     1)
     # Simulate.
     printf "\n    Items with wrong ownership: "
-    find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print | wc -l
+    if [ $skip_checks -eq 1 ]; then
+      find "$1" $detected_vendor_path \( -type f -o -type d \) -print | wc -l
+    else
+      find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print | wc -l
+    fi
     ;;
 
     2)
     # Simulate verbosely.
     printf "\n    Files and directories that would have their ownership fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print)
+    if [ $skip_checks -eq 1 ]; then
+      items=$(find "$1" $detected_vendor_path \( -type f -o -type d \) -print)
+    else
+      items=$(find "$1" $detected_vendor_path \( ! -user $drupal_user -o ! -group $httpd_group \) \( -type f -o -type d \) -print)
+    fi
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -191,17 +217,28 @@ function fix_ownership() {
 # Params:
 #  $1 Path to the directory to process.
 #  $2 Type of element to process. f for files, d for directories.
-#  $3 Permissions wanted compatible with chmod . Exmaple: u=rwx,g=rwxs,o=
+#  $3 Permissions wanted compatible with chmod . Example: u=rwx,g=rwxs,o=
+#
+# Globals:
+#  skip_checks: when set to 1, skip permission filtering.
 function fix_code_permission_helper() {
   case $simulate in
     0)
     # Real action.
-    find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
+    if [ $skip_checks -eq 1 ]; then
+      find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 -print0 \) | xargs -r -0 -L4 chmod $3
+    else
+      find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print0 \) | xargs -r -0 -L4 chmod $3
+    fi
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
+    if [ $skip_checks -eq 1 ]; then
+      num=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 -print \) | wc -l)
+    else
+      num=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \) | wc -l)
+    fi
     printf "\n    Code items with wrong permissions: $num"
     ;;
 
@@ -209,7 +246,11 @@ function fix_code_permission_helper() {
     # Simulate verbosely.
     printf "\n    Code files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
+    if [ $skip_checks -eq 1 ]; then
+      items=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 -print \))
+    else
+      items=$(find "$1" \( -path "$1"/sites/\*/$file_folder_name -prune \) -o \( -path "$1"/sites/\*/$private_folder_name -prune \) -o \( -type $2 ! -perm $3 -print \))
+    fi
     items=${items:-None}
     printf "\n      ${items//$'\n'/$'\n'      }\n"
     ;;
@@ -224,17 +265,28 @@ function fix_code_permission_helper() {
 # Params:
 #  $1 Path to the directory to process.
 #  $2 Type of element to process. f for files, d for directories.
-#  $3 Permissions wanted compatible with chmod . Exmaple: u=rwx,g=rwxs,o=
+#  $3 Permissions wanted compatible with chmod . Example: u=rwx,g=rwxs,o=
+#
+# Globals:
+#  skip_checks: when set to 1, skip permission filtering.
 function fix_content_permission_helper() {
   case $simulate in
     0)
     # Real action. Exclude .htaccess files as they should be treated as code.
-    find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print0 | xargs -r -0 -L20 chmod $3
+    if [ $skip_checks -eq 1 ]; then
+      find "$1" -type $2 ! -name '.htaccess' -print0 | xargs -r -0 -L20 chmod $3
+    else
+      find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print0 | xargs -r -0 -L20 chmod $3
+    fi
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print | wc -l)
+    if [ $skip_checks -eq 1 ]; then
+      num=$(find "$1" -type $2 ! -name '.htaccess' -print | wc -l)
+    else
+      num=$(find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print | wc -l)
+    fi
     printf "\n      Content items with wrong permissions: $num"
     ;;
 
@@ -242,7 +294,11 @@ function fix_content_permission_helper() {
     # Simulate verbosely.
     printf "\n      Content files and directories that would have their permissions fixed: "
     # Use a variable to indent output.
-    items=$(find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print)
+    if [ $skip_checks -eq 1 ]; then
+      items=$(find "$1" -type $2 ! -name '.htaccess' -print)
+    else
+      items=$(find "$1" -type $2 ! -name '.htaccess' ! -perm $3 -print)
+    fi
     items=${items:-None}
     printf "\n        ${items//$'\n'/$'\n'        }\n"
     ;;
@@ -290,22 +346,35 @@ function fix_code_permissions() {
 #
 # Globals:
 #  code_file_perms: permissions scheme to use for code files.
+#  skip_checks: when set to 1, skip permission filtering.
 function fix_htaccess_in_content_helper() {
   case $simulate in
     0)
     # Real action.
-    find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print0 | xargs -r -0 -L20 chmod "$code_file_perms"
+    if [ $skip_checks -eq 1 ]; then
+      find "$1" -type f -name '.htaccess' -print0 | xargs -r -0 -L20 chmod "$code_file_perms"
+    else
+      find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print0 | xargs -r -0 -L20 chmod "$code_file_perms"
+    fi
     ;;
 
     1)
     # Simulate.
-    num=$(find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print | wc -l)
+    if [ $skip_checks -eq 1 ]; then
+      num=$(find "$1" -type f -name '.htaccess' -print | wc -l)
+    else
+      num=$(find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print | wc -l)
+    fi
     [ $num -gt 0 ] && printf "\n      .htaccess files with wrong permissions: $num"
     ;;
 
     2)
     # Simulate verbosely.
-    items=$(find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print)
+    if [ $skip_checks -eq 1 ]; then
+      items=$(find "$1" -type f -name '.htaccess' -print)
+    else
+      items=$(find "$1" -type f -name '.htaccess' ! -perm "$code_file_perms" -print)
+    fi
     if [ ! -z "$items" ]
     then
       printf "\n      .htaccess files that would have their permissions fixed: "
@@ -358,6 +427,7 @@ additional_files_paths=""
 file_folder_name='files'
 private_folder_name='private'
 simulate=0
+skip_checks=0
 
 
 # Parse Command Line Arguments
@@ -386,6 +456,9 @@ while [ "$#" -gt 0 ]; do
       ;;
     --dry-run | -n)
       simulate=$((simulate  + 1))
+      ;;
+    --skip-checks | -k)
+      skip_checks=1
       ;;
     --help | -h)
       usage
@@ -445,6 +518,7 @@ Content dirs perms: $content_dir_perms
 Content files perms: $content_file_perms
 File folder name: $file_folder_name
 Private files folder name: $private_folder_name
+Skip permission/ownership checks: $([ $skip_checks -eq 1 ] && echo "Yes (processes all files)" || echo "No (only processes files that need changes)")
 "
 if [ ! -z "${additional_files_paths}" ]
 then
