@@ -72,9 +72,9 @@ cat <<HELP
 
     -k, --skip-checks: Skip filtering by ownership and permissions. Process all
         files and directories regardless of their current state. This is faster
-        when most or all files need fixing, but slower when only a few files need
-        changes. Useful for initial setup or after major changes affecting many
-        files.
+        when most or all files need fixing, but slower when only a few files
+        need changes. Useful for initial setup or after major changes affecting
+        many files.
 
     -h, --help: Display this help message.
 
@@ -111,10 +111,11 @@ cat <<HELP
     `basename "$0"` -u=deploy -k
 
       Fix permissions using 'deploy' as owner, and defaults value for group
-      owner and Drupal Path. Skip filtering checks to process all files faster,
-      useful when setting up a new site or after major permission changes.
+      owner and Drupal Path. Skip filtering checks to process all files
+      regardless of their current ownership or permissions. This is useful when
+      setting up a new site or after major permission changes.
 
-    `basename "$0"` -u=deploy -n -n
+    `basename "$0"` -u=deploy -n
 
       Display the list of files and directories that would be fixed, using
       'deploy' as owner, and default values for group owner and Drupal Path.
@@ -517,7 +518,7 @@ Content dirs perms: $content_dir_perms
 Content files perms: $content_file_perms
 File folder name: $file_folder_name
 Private files folder name: $private_folder_name
-Skip permission/ownership checks: $([ $skip_checks -eq 1 ] && echo "Yes (faster, processes all files)" || echo "No (only processes files that need changes)")
+Skip permission/ownership checks: $([ $skip_checks -eq 1 ] && echo "Yes (processes all files)" || echo "No (only processes files that need changes)")
 "
 if [ ! -z "${additional_files_paths}" ]
 then
