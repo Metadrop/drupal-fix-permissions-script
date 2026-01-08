@@ -122,9 +122,7 @@ permissions and ownership regardless of whether they are needed or not.
 
 However, checking each file's current state has overhead. When most or all files
 need fixing (e.g., initial setup or after bulk changes), this checking can add
-~30% overhead on large sites (measured with `performance-test.sh` on 30,000+ files).
+10~30% overhead on large sites
+.
 In such cases, use the `--skip-checks` (`-k`) option to bypass the filtering and
 process all files directly, which will be faster.
-
-To verify the performance characteristics on your system, run the included
-`performance-test.sh` script.
