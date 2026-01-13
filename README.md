@@ -1,3 +1,11 @@
+
+# Moved!
+
+
+> [!CAUTION] **This project has been moved to Drupal.org!**
+> See https://www.drupal.org/project/permissions_fixer
+
+
 # Script to fix permissions in a Drupal installation
 
 This script sets the permissions and ownership of the files of a Drupal
